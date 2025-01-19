@@ -17,7 +17,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
 
         // get user urls
 
-        const userURLs = await URLModel.find({ userId: user.id })
+        const userURLs = await URLModel.find({ userId: user.id }).sort({ createdAt: -1 });
 
         // Respond with user profile data
         res.status(200).json({

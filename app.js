@@ -27,6 +27,8 @@ if (cluster.isPrimary) {
     const bodyParser = require('body-parser')
     const cors = require('cors')
 
+    require('dotenv').config();
+
     app.use(bodyParser.json())
 
     app.use(cors({
@@ -58,6 +60,8 @@ if (cluster.isPrimary) {
     const profileRouter = require('./routes/profile')
     const URLRouter = require('./routes/urlShorten')
     const URLRedirect = require('./routes/urlRedirect')
+    const URLUpdate = require('./routes/urlUpdate')
+    const URLDeleteRouter = require('./routes/urlDelete')
 
 
     // End Points
@@ -67,9 +71,11 @@ if (cluster.isPrimary) {
     app.use('/api/user', profileRouter)
     app.use('/api/url', URLRouter)
     app.use('/api/url', URLRedirect)
+    app.use('/api/url', URLUpdate)
+    app.use('/api/url', URLDeleteRouter )
 
     // PORT 
-    const PORT = 5000;
+    const PORT = process.env.PORT || 5000;
 
     app.listen(PORT, () => {
         console.log("App is Running at Port: ", PORT)

@@ -1,18 +1,33 @@
 const express = require('express');
 const URLModel = require('../models/urls');
+// const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
 // Route for redirecting based on short URL
-router.get('/url-redirect/:shortURL', async (req, res) => {
+router.put('/url-redirect/:shortURL', async (req, res) => {
     const { shortURL } = req.params; // Get the short URL from route params
+
+    const { timestamp, referringPage, deviceType, browser, os, location } = req.body;
+
+    console.log(timestamp, referringPage, deviceType, browser, os, location)
 
     try {
         // Look for the short URL in the database
         const existingURL = await URLModel.findOneAndUpdate(
             { shortURL },
             {
-                $inc: { clicks: 1 }
+                $inc: { clicks: 1 },
+                $push: {
+                    analytics: {
+                        timestamp,
+                        referringPage,
+                        deviceType,
+                        browser,
+                        os,
+                        location,
+                    }
+                }
             },
             { new: true }
         );
