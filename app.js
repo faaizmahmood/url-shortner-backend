@@ -43,7 +43,7 @@ if (cluster.isPrimary) {
         next()
     })
 
-    app.get('/', (req, res) => {
+    app.get('/api', (req, res) => {
 
         res.status(200).json({
             message: 'working',
