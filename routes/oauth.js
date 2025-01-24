@@ -1,55 +1,49 @@
-const express = require('express')
-const router = express.Router()
+const express = require('express');
+const router = express.Router();
 
-const axios = require('axios')
+const { setUser } = require("../services/auth");
 
-const User = require('../models/user')
-
-const { setUser } = require("../services/auth")
-
+const User = require('../models/user');
 
 router.post('/oauth/google', async (req, res) => {
-
-    const { credential } = req.body
+    const { credential } = req.body;
 
     try {
+        // Use fetch instead of axios
+        const response = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${credential}`);
+        const googleUser = await response.json();
 
-        const googleUser = await axios.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${credential}`)
-
-        let user = await User.findOne({ email: googleUser.data.email })
-
-        if (!user) {
-
-            user = new User({
-                name: googleUser.data.name,
-                email: googleUser.data.email,
-                provider: "google"
-            })
-
-            await user.save()
-
+        if (!response.ok) {
+            return res.status(500).json({ message: "Authentication failed." });
         }
 
+        let user = await User.findOne({ email: googleUser.email });
+
+        if (!user) {
+            user = new User({
+                name: googleUser.name,
+                email: googleUser.email,
+                provider: "google",
+            });
+
+            await user.save();
+        }
 
         const payload = {
             id: user._id,
             name: user.name,
-            email: user.email
-        }
+            email: user.email,
+        };
 
-        const token = setUser(payload)
+        const token = setUser(payload);
 
         res.status(200).json({
             message: "Login successful",
             user: token,
         });
-
     } catch (error) {
-
         res.status(500).json({ message: "Authentication failed." });
-
     }
+});
 
-})
-
-module.exports = router
+module.exports = router;
