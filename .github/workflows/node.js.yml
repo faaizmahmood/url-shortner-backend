@@ -7,24 +7,27 @@ on:
     branches: [ "main" ]
 
 jobs:
-  deploy_lambda:  # Fixed typo here (deploye_lamda -> deploy_lambda)
+  deploy_lambda:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [14, 16, 18]  # Add the node versions you'd like to test across.
+        node-version: [14, 16, 18]  # Specify node versions you'd like to test.
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Node.js ${{ matrix.node-version }} 
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Clear npm cache
+        run: npm cache clean --force  # Added step to clean the npm cache
 
-    - name: Run tests
-      run: npm test  # Assuming you want to run tests after installation.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
