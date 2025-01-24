@@ -1,15 +1,58 @@
+const express = require('express');
+const serverless = require('serverless-http');
+const cluster = require('cluster');
+const os = require('os');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 
-const express = require('express')
-const cluster = require('cluster')
-const os = require('os')
-const app = express()
+require('dotenv').config();
 
+// Initialize Express app
+const app = express();
 
+// Middleware
+app.use(bodyParser.json());
+app.use(cors({
+    origin: ['http://localhost:5173'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true
+}));
+
+app.use((req, res, next) => {
+    console.log(`${new Date().toLocaleString()}  Request made at: ${req.originalUrl}`);
+    next();
+});
+
+// Basic Route
+app.get('/api', (req, res) => {
+    res.status(200).json({
+        message: 'working',
+        worker: `worker ${process.pid}`
+    });
+});
+
+// Routes
+const userRouter = require('./routes/user');
+const oauthRouter = require('./routes/oauth');
+const profileRouter = require('./routes/profile');
+const URLRouter = require('./routes/urlShorten');
+const URLRedirect = require('./routes/urlRedirect');
+const URLUpdate = require('./routes/urlUpdate');
+const URLDeleteRouter = require('./routes/urlDelete');
+
+// Endpoints
+app.use('/api/auth', userRouter);
+app.use('/api/auth', oauthRouter);
+app.use('/api/user', profileRouter);
+app.use('/api/url', URLRouter);
+app.use('/api/url', URLRedirect);
+app.use('/api/url', URLUpdate);
+app.use('/api/url', URLDeleteRouter);
+
+// Cluster Setup
 if (cluster.isPrimary) {
-
-
     for (let i = 0; i < os.cpus().length; i++) {
-        cluster.fork()
+        cluster.fork();
     }
 
     cluster.on('exit', (worker, code, signal) => {
@@ -20,66 +63,17 @@ if (cluster.isPrimary) {
         }
         cluster.fork();
     });
-
 } else {
-
-    const db = require('./utils/db')
-    const bodyParser = require('body-parser')
-    const cors = require('cors')
-
-    require('dotenv').config();
-
-    app.use(bodyParser.json())
-
-    app.use(cors({
-        origin: ['http://localhost:5173'],
-        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-        credentials: true
-    }))
-
-    app.use((req, res, next) => {
-
-        console.log(`${new Date().toLocaleString()}  Request made at: ${req.originalUrl}`)
-        next()
-    })
-
-    app.get('/api', (req, res) => {
-
-        res.status(200).json({
-            message: 'working',
-            worker: `worker ${process.pid}`
-        })
-
-    })
-
-
-    // Routes
-
-    const userRouter = require('./routes/user')
-    const oauthRouter = require('./routes/oauth')
-    const profileRouter = require('./routes/profile')
-    const URLRouter = require('./routes/urlShorten')
-    const URLRedirect = require('./routes/urlRedirect')
-    const URLUpdate = require('./routes/urlUpdate')
-    const URLDeleteRouter = require('./routes/urlDelete')
-
-
-    // End Points
-
-    app.use('/api/auth', userRouter)
-    app.use('/api/auth', oauthRouter)
-    app.use('/api/user', profileRouter)
-    app.use('/api/url', URLRouter)
-    app.use('/api/url', URLRedirect)
-    app.use('/api/url', URLUpdate)
-    app.use('/api/url', URLDeleteRouter )
-
-    // PORT 
-    const PORT = process.env.PORT || 5000;
-
-    app.listen(PORT, () => {
-        console.log("App is Running at Port: ", PORT)
-    })
-
-
+    console.log(`Worker ${process.pid} is running`);
 }
+
+// Export the Lambda handler
+module.exports.handler = serverless(app);
+
+
+// if (process.env.NODE_ENV !== 'production') {
+//     const PORT = process.env.PORT || 5000;
+//     app.listen(PORT, () => {
+//         console.log(`App is Running at Port: ${PORT}`);
+//     });
+// }
