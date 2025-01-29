@@ -1,5 +1,4 @@
 const express = require('express');
-const serverless = require('serverless-http');
 const cluster = require('cluster');
 const os = require('os');
 const bodyParser = require('body-parser');
@@ -65,15 +64,10 @@ if (cluster.isPrimary) {
     });
 } else {
     console.log(`Worker ${process.pid} is running`);
+
+    // Start the server for each worker
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        console.log(`App is Running at Port: ${PORT}`);
+    });
 }
-
-// Export the Lambda handler
-module.exports.handler = serverless(app);
-
-
-// if (process.env.NODE_ENV !== 'production') {
-//     const PORT = process.env.PORT || 5000;
-//     app.listen(PORT, () => {
-//         console.log(`App is Running at Port: ${PORT}`);
-//     });
-// }
