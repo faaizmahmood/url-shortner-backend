@@ -2,7 +2,6 @@ const express = require('express');
 const URLModel = require('../models/urls');
 const jwt = require('jsonwebtoken');
 const barcode = require('../services/barcode');
-const s3Upload = require('../services/s3Upload');
 
 const router = express.Router();
 const secretKey = process.env.SECRETEJWTKEY;
@@ -56,11 +55,8 @@ router.post('/url-shorten', authenticateJWT, async (req, res) => {
         // Generate and upload barcode only for authenticated users
         if (user) {
             const barcodeData = await barcode(`http://localhost:5173/u/${shortCode}`);
-            // barcodeS3URL = await s3Upload(barcodeData);
         }
 
-        // const barcodeData = await barcode(`http://localhost:5173/u/${shortCode}`);
-        // barcodeS3URL = await s3Upload(barcodeData);
 
         const newURL = new URLModel({
             longURL: URL,
