@@ -3,6 +3,7 @@ const cluster = require('cluster');
 const os = require('os');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const db = require('./utils/db')
 
 require('dotenv').config();
 
