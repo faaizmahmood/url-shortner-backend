@@ -63,12 +63,11 @@ router.post('/signin', async (req, res) => {
         const userData = await User.findOne({ email })
 
         if (!userData) {
-
-            res.status(404).json({
+            return res.status(404).json({
                 error: "user not found."
             })
-
         }
+
 
         const isMatch = await userData.comparePassword(password)
 
