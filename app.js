@@ -13,7 +13,7 @@ const app = express();
 // Middleware
 app.use(bodyParser.json());
 app.use(cors({
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5173', 'https://url-shortner-seven-navy.vercel.app'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true
 }));
